@@ -1,0 +1,35 @@
+{
+    "model_params": {
+        "conv_layers_params": [
+            {
+                "conv_params": {
+                    "in_channels": 32,
+                    "out_channels": 128,
+                    "kernel_size": 5,
+                    "padding": "same"
+                },
+                "dim_feedforward": 128,
+                "dropout_params": {
+                    "p": 0.1
+                }
+            }
+        ],
+        "transformer_model": "roberta-base"
+    },
+    "pretrain_params": {
+        "batch_size": 1024,
+        "epochs": 20,
+        "lr": 0.001,
+        "weight_decay": 0.01
+    },
+    "pan_train_params": {
+        "batch_size": 64,
+        "epochs": 50,
+        "lr": 0.001,
+        "weight_decay": 0.01
+    },
+    "model_file_name": "out/models/conv_transformer_base.pt",
+    "log_file_name": "out/logs/conv_transformer_base.log",
+    "task_dataset_root_dir": "data/pan23/transformed",
+    "pretrain_dataset_root_dir": "data/blogposts"
+}
