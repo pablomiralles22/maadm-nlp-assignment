@@ -1,12 +1,11 @@
-import pandas as pd
 import argparse
 import json
 import os
 import re
 
 
-def get_dataframe(task_path):
-    filenames = os.listdir(task_path)
+def transform(source_path, target_path):
+    filenames = os.listdir(source_path)
 
     lines_by_id = dict()
     truths_by_id = dict()
@@ -14,7 +13,7 @@ def get_dataframe(task_path):
     for filename in filenames:
         is_truth = filename.startswith("truth")
         problem_id = re.search(r"\d+", filename).group(0)
-        filepath = os.path.join(task_path, filename)
+        filepath = os.path.join(source_path, filename)
 
         with open(filepath, "r", encoding="utf-8") as f:
             if is_truth is True:
@@ -22,16 +21,20 @@ def get_dataframe(task_path):
             else:
                 lines_by_id[problem_id] = f.readlines()
 
-    df_dict = dict(id=[], text1=[], text2=[], label=[])
+    cnt = 0
     for problem_id, lines in lines_by_id.items():
         truths = truths_by_id[problem_id]
         for text1, text2, label in zip(lines, lines[1:], truths):
-            df_dict["id"].append(problem_id)
-            df_dict["text1"].append(text1)
-            df_dict["text2"].append(text2)
-            df_dict["label"].append(label)
+            example = {
+                "text1": text1,
+                "text2": text2,
+                "label": label,
+            }
+            example_path = os.path.join(target_path, f"{cnt}.json")
+            with open(example_path, "w", encoding="utf-8") as f:
+                json.dump(example, f, ensure_ascii=False)
+            cnt += 1
 
-    return pd.DataFrame.from_dict(df_dict)
 
 
 def main():
@@ -62,9 +65,9 @@ def main():
     for task in range(1, 4):
         for set_type in ["train", "validation"]:
             source_path = os.path.join(args.source_dir, f"pan23-multi-author-analysis-dataset{task}/pan23-multi-author-analysis-dataset{task}-{set_type}/")
-            df = get_dataframe(source_path)
-            target_path = os.path.join(args.target_dir, f"pan23-task{task}-{set_type}.csv")
-            df.to_csv(target_path, index=False)
+            target_path = os.path.join(args.target_dir, f"pan23-task{task}-{set_type}/")
+            os.makedirs(target_path, exist_ok=True)
+            transform(source_path, target_path)
 
 
 if __name__ == "__main__":
