@@ -20,13 +20,15 @@
         "batch_size": 1024,
         "epochs": 20,
         "lr": 0.001,
-        "weight_decay": 0.01
+        "weight_decay": 0.01,
+        "unfrozen_layers": 4
     },
     "pan_train_params": {
         "batch_size": 64,
         "epochs": 50,
         "lr": 0.001,
-        "weight_decay": 0.01
+        "weight_decay": 0.01,
+        "unfrozen_layers": 2
     },
     "model_file_name": "out/models/conv_transformer_base.pt",
     "log_file_name": "out/logs/conv_transformer_base.log",
