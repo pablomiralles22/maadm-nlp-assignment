@@ -1,5 +1,3 @@
-import torch
-
 from torch import nn
 from conv_layer import ConvLayer
 
@@ -27,4 +25,4 @@ class ConvModel(nn.Module):
         x = self.embeddings(input_ids)  # (...BATCH_SIZE, SEQ_LEN, EMBEDDING_DIM)
         for conv_layer in self.conv_layers:
             x = conv_layer(x)
-        return torch.mean(x, dim=-1)  # (...BATCH_SIZE, EMBEDDING_DIM)
+        return x
