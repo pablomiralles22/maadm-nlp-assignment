@@ -14,24 +14,30 @@
                 }
             }
         ],
-        "transformer_model": "roberta-base"
+        "transformer_model": "roberta-base",
+        "projection_head_params": {
+            "dropout_p": 0.1,
+            "ff_dim": 256,
+            "output_dim": 128
+        }
     },
+    "max_len": 512,
     "pretrain_params": {
-        "batch_size": 1024,
-        "epochs": 20,
-        "lr": 0.001,
-        "weight_decay": 0.01,
-        "unfrozen_layers": 4
-    },
-    "pan_train_params": {
         "batch_size": 64,
-        "epochs": 50,
-        "lr": 0.001,
-        "weight_decay": 0.01,
+        "test_set_ratio": 0.1,
+        "steps": 20000,
+        "learning_rate": 0.0001,
         "unfrozen_layers": 2
     },
-    "model_file_name": "out/models/conv_transformer_base.pt",
-    "log_file_name": "out/logs/conv_transformer_base.log",
+    "pan_train_params": {
+        "batch_size": 8,
+        "steps": 20000,
+        "lr": 0.0001,
+        "unfrozen_layers": 2
+    },
+    "prefix_file_name": "conv_transformer_base",
+    "out_dir": "out",
     "task_dataset_root_dir": "data/pan23/transformed",
-    "pretrain_dataset_root_dir": "data/blogposts"
+    "pretrain_dataset_root_dir": "data/blogposts",
+    "device": "cuda:2"
 }
