@@ -10,15 +10,19 @@
                 },
                 "dim_feedforward": 128,
                 "dropout_params": {
-                    "p": 0.1
+                    "p": 0.2
                 }
             }
         ],
         "transformer_model": "roberta-base",
         "projection_head_params": {
-            "dropout_p": 0.1,
+            "dropout_p": 0.2,
             "ff_dim": 256,
             "output_dim": 128
+        },
+        "classification_head_params": {
+            "dropout_p": 0.2,
+            "ff_dim": 256
         }
     },
     "max_len": 512,
@@ -26,17 +30,18 @@
         "batch_size": 64,
         "test_set_ratio": 0.1,
         "steps": 20000,
-        "learning_rate": 0.0001,
+        "learning_rate": 0.00005,
         "unfrozen_layers": 2
     },
     "pan_train_params": {
-        "batch_size": 8,
-        "steps": 20000,
-        "lr": 0.0001,
+        "batch_size": 16,
+        "steps": 1000,
+        "lr": 0.00005,
         "unfrozen_layers": 2
     },
-    "prefix_file_name": "conv_transformer_base",
-    "out_dir": "out",
+    "log_file": "out/conv_transformer_base.log",
+    "pretrained_model_path": "out/conv_transformer_base_pretrained.pt",
+    "finetuned_model_path_fmt": "out/conv_transformer_base_finetuned_{}.pt",
     "task_dataset_root_dir": "data/pan23/transformed",
     "pretrain_dataset_root_dir": "data/blogposts",
     "device": "cuda:2"

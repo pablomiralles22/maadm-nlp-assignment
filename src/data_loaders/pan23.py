@@ -23,8 +23,8 @@ class PAN23CollatorFn:
         self.max_len = max_len
 
     def __call__(self, batch):
-        texts = [(item["text1"], item["text2"]) for item in batch]
-        labels = [item["label"] for item in batch]
+        texts = [item[label] for item in batch for label in ["text1", "text2"]]  # (2*batch_size,)
+        labels = [item["label"] for item in batch]  # (batch_size,)
 
         encoding = self.tokenizer.batch_encode_plus(
             texts,
