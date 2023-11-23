@@ -35,7 +35,6 @@
             "ff_dim": 256
         }
     },
-    "max_len": 512,
     "pretrain_params": {
         "data_module_params": {
             "data_path": "data/blogposts/",
@@ -74,11 +73,5 @@
             "devices": [1, 2]
         },
         "unfrozen_layers": 2
-    },
-    "log_file": "out/conv_transformer_base.log",
-    "pretrained_model_path": "out/conv_transformer_base_pretrained.pt",
-    "finetuned_model_path_fmt": "out/conv_transformer_base_finetuned_{}.pt",
-    "task_dataset_root_dir": "data/pan23/transformed",
-    "pretrain_dataset_root_dir": "data/blogposts",
-    "device": "cuda:2"
+    }
 }

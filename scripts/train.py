@@ -179,9 +179,6 @@ def main():
 
     # create required directories
     for config in configs:
-        os.makedirs(os.path.dirname(config["log_file"]), exist_ok=True)
-        os.makedirs(os.path.dirname(config["pretrained_model_path"]), exist_ok=True)
-        os.makedirs(os.path.dirname(config["finetuned_model_path_fmt"]), exist_ok=True)
         run(config)
 
 
