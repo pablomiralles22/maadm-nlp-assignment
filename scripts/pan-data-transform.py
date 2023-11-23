@@ -65,7 +65,7 @@ def main():
     for task in range(1, 4):
         for set_type in ["train", "validation"]:
             source_path = os.path.join(args.source_dir, f"pan23-multi-author-analysis-dataset{task}/pan23-multi-author-analysis-dataset{task}-{set_type}/")
-            target_path = os.path.join(args.target_dir, f"pan23-task{task}-{set_type}/")
+            target_path = os.path.join(args.target_dir, f"task{task}/{set_type}/")
             os.makedirs(target_path, exist_ok=True)
             transform(source_path, target_path)
 

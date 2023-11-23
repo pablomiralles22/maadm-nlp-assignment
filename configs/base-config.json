@@ -5,38 +5,74 @@
                 "conv_params": {
                     "in_channels": 32,
                     "out_channels": 128,
-                    "kernel_size": 5,
-                    "padding": "same"
+                    "kernel_size": 5
                 },
                 "dim_feedforward": 128,
                 "dropout_params": {
-                    "p": 0.2
+                    "p": 0.1
+                }
+            },
+            {
+                "conv_params": {
+                    "in_channels": 128,
+                    "out_channels": 128,
+                    "kernel_size": 5
+                },
+                "dim_feedforward": 128,
+                "dropout_params": {
+                    "p": 0.1
                 }
             }
         ],
         "transformer_model": "roberta-base",
         "projection_head_params": {
-            "dropout_p": 0.2,
+            "dropout_p": 0.1,
             "ff_dim": 256,
             "output_dim": 128
         },
         "classification_head_params": {
-            "dropout_p": 0.2,
+            "dropout_p": 0.1,
             "ff_dim": 256
         }
     },
     "max_len": 512,
     "pretrain_params": {
-        "batch_size": 64,
-        "test_set_ratio": 0.1,
-        "steps": 20000,
-        "learning_rate": 0.00005,
+        "data_module_params": {
+            "data_path": "data/blogposts/",
+            "batch_size": 64,
+            "max_len": 512,
+            "val_ratio": 0.1,
+            "tokenizer": "roberta-base"
+        },
+        "optimizer_params": {
+            "lr": 0.00001
+        },
+        "trainer_params": {
+            "max_steps": 20000,
+            "enable_checkpointing": true,
+            "default_root_dir": "out/conv_transformer_base/pretrained/",
+            "accelerator": "cuda",
+            "devices": [2]
+        },
         "unfrozen_layers": 2
     },
     "pan_train_params": {
-        "batch_size": 16,
-        "steps": 1000,
-        "lr": 0.00005,
+        "data_module_params": {
+            "data_path": "data/pan23/transformed",
+            "batch_size": 16,
+            "max_len": 512,
+            "tokenizer": "roberta-base"
+        },
+        "optimizer_params": {
+            "lr": 0.00001
+        },
+        "trainer_params": {
+            "max_steps": 10000,
+            "enable_checkpointing": true,
+            "default_root_dir": "out/conv_transformer_base/finetuned/",
+            "accelerator": "cuda",
+            "devices": [1, 2]
+        },
         "unfrozen_layers": 2
     },
     "log_file": "out/conv_transformer_base.log",
