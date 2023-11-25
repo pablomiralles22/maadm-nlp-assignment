@@ -2,7 +2,7 @@ import torch
 import pytorch_lightning as pl
 import torchmetrics
 
-from torch import nn
+from torch.nn import functional as F
 
 
 class ClassificationModule(pl.LightningModule):
@@ -18,7 +18,7 @@ class ClassificationModule(pl.LightningModule):
         self,
         model,
         optimizer_config,
-        positive_ratio,  # ratio of positive samples in the dataset, to correct imbalance
+        negative_ratio,  # ratio of positive samples in the dataset, to correct imbalance
     ):
         super().__init__()
         self.optimizer_config = {
@@ -27,7 +27,9 @@ class ClassificationModule(pl.LightningModule):
         }
         self.model = model
         self.f1_score = torchmetrics.F1Score(task="binary")
-        self.loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(positive_ratio))
+
+        self.pos_weight = torch.tensor(negative_ratio, requires_grad=False)
+        self.weight = torch.tensor(2.0 / (1. + negative_ratio), requires_grad=False)
 
     def training_step(self, batch, batch_idx):
         loss, logits, labels = self._step(batch, batch_idx)
@@ -37,9 +39,8 @@ class ClassificationModule(pl.LightningModule):
                 "train_loss": loss,
                 "train_f1_score": f1_score,
             },
-            on_step=False,
-            on_epoch=True,
             prog_bar=True,
+            batch_size=labels.nelement(),
         )
         return {"loss": loss, "logits": logits, "labels": labels}
 
@@ -51,9 +52,8 @@ class ClassificationModule(pl.LightningModule):
                 "val_loss": loss,
                 "val_f1_score": f1_score,
             },
-            on_step=False,
-            on_epoch=True,
             prog_bar=True,
+            batch_size=labels.nelement(),
         )
         return {"loss": loss, "logits": logits, "labels": labels}
 
@@ -63,7 +63,9 @@ class ClassificationModule(pl.LightningModule):
         labels = batch["labels"].float().view(-1, 1)
 
         logits = self.model(input_ids, attention_mask)  # (BATCH_SIZE, 1)
-        loss = self.loss_fn(logits, labels)
+        loss = F.binary_cross_entropy_with_logits(
+            logits, labels, pos_weight=self.pos_weight, weight=self.weight,
+        )
         return loss, logits, labels
 
     def configure_optimizers(self):
@@ -78,6 +80,7 @@ class ClassificationModule(pl.LightningModule):
             "lr_scheduler": {
                 "scheduler": scheduler,
                 "monitor": "train_f1_score",
-                "interval": "epoch",
+                "interval": "step",
+                "frequency": 200,
             },
         }

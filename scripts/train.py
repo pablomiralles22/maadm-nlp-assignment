@@ -2,6 +2,7 @@ import argparse
 import sys
 import json
 import os
+import torch
 import pytorch_lightning as pl
 
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
@@ -31,17 +32,16 @@ def pretrain(config):
     data_module_params = pretrain_params["data_module_params"]
     optimizer_params = pretrain_params["optimizer_params"]
     trainer_params = pretrain_params["trainer_params"]
+    fit_params = pretrain_params.get("fit_params") or {}
 
     unfrozen_layers = pretrain_params["unfrozen_layers"]
 
     # load model with head
-    model = ConvTransformer(
-        model_params["conv_layers_params"], model_params["transformer_model"]
-    )
+    model = ConvTransformer(**model_params)
     model_with_proj_head = ModelWithProjectionHead(
         model,
         model.output_embedding_dim,
-        **model_params["projection_head_params"],
+        **config["projection_head_params"],
     )
 
     # freeze layers from config
@@ -61,18 +61,18 @@ def pretrain(config):
         ModelCheckpoint(
             filename="{epoch}-{val_loss:.2f}",
             monitor="val_loss",
-            mode="max",
+            mode="min",
         ),
         EarlyStopping(
             monitor="val_loss",
-            patience=5,
-            mode="max",
+            patience=10,
+            mode="min",
         ),
     ]
     trainer = pl.Trainer(**trainer_params, callbacks=callbacks)
 
     # fit model
-    trainer.fit(pretraining_module, data_module)
+    trainer.fit(pretraining_module, data_module, **fit_params)
 
     return model
 
@@ -81,12 +81,13 @@ def finetune(config, pretrained_model, task_name):
     print(f"Starting finetuning for task {task_name}...")
 
     # unpack config
-    classification_head_params = config["model_params"]["classification_head_params"]
+    classification_head_params = config["classification_head_params"]
     pan_train_params = config["pan_train_params"]
 
     data_module_params = pan_train_params["data_module_params"]
     optimizer_params = pan_train_params["optimizer_params"]
     trainer_params = pan_train_params["trainer_params"]
+    fit_params = pan_train_params.get("fit_params") or {}
 
     unfrozen_layers = pan_train_params["unfrozen_layers"]
 
@@ -111,7 +112,7 @@ def finetune(config, pretrained_model, task_name):
     classification_module = ClassificationModule(
         model=model_with_class_head,
         optimizer_config=optimizer_params,
-        positive_ratio=data_module.get_positive_ratio(),
+        negative_ratio=(1. / data_module.get_positive_ratio()),
     )
 
     # change root dir to task one
@@ -126,23 +127,26 @@ def finetune(config, pretrained_model, task_name):
         ),
         EarlyStopping(
             monitor="val_f1_score",
-            patience=5,
+            patience=10,
             mode="max",
         ),
     ]
     trainer = pl.Trainer(**trainer_params, callbacks=callbacks)
 
     # fit model
-    trainer.fit(classification_module, data_module)
+    trainer.fit(classification_module, data_module, **fit_params)
 
     return model_with_class_head
 
 
+PRETRAINED_STORE_PATH = "/tmp/pretrained_model.pt"
+
 def run(config):
     pretrained_model = pretrain(deepcopy(config))
-    finetune(deepcopy(config), pretrained_model, "task1")
-    finetune(deepcopy(config), pretrained_model, "task2")
-    finetune(deepcopy(config), pretrained_model, "task3")
+    torch.save(pretrained_model, PRETRAINED_STORE_PATH)  # to start again for each task
+    finetune(deepcopy(config), torch.load(PRETRAINED_STORE_PATH), "task1")
+    finetune(deepcopy(config), torch.load(PRETRAINED_STORE_PATH), "task2")
+    finetune(deepcopy(config), torch.load(PRETRAINED_STORE_PATH), "task3")
 
 
 ###### Main ######
