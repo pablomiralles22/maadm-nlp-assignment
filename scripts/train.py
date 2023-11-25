@@ -11,7 +11,7 @@ dir_path = os.path.dirname(os.path.abspath(__file__))
 project_src_path = os.path.join(dir_path, "..", "src")
 sys.path.append(project_src_path)
 
-from models.conv_transformer_model import ConvTransformer
+from models.model_builder import ModelBuilder
 from heads.projection_head import ModelWithProjectionHead
 from heads.classification_head import ModelWithClassificationHead
 from trainers.contrastive_pretrainer import ContrastivePretrainingModule
@@ -25,7 +25,9 @@ from utils.freeze_layers import freeze_layers
 def pretrain(config):
     print("Starting pretraining...")
     # unpack config
+    model_name = config["model_name"]
     model_params = config["model_params"]
+
     pretrain_params = config["pretrain_params"]
 
     data_module_params = pretrain_params["data_module_params"]
@@ -35,19 +37,24 @@ def pretrain(config):
 
     unfrozen_layers = pretrain_params["unfrozen_layers"]
 
+    # load data module
+    data_module = BlogDataModule.from_joint_config(data_module_params)
+
     # load model with head
-    model = ConvTransformer(**model_params)
+    model = ModelBuilder.build(
+        model_name,
+        model_params,
+        data_module.get_vocab_size(),
+        data_module.get_padding_idx(),
+    )
     model_with_proj_head = ModelWithProjectionHead(
         model,
-        model.output_embedding_dim,
+        model.get_out_embedding_dim(),
         **config["projection_head_params"],
     )
 
     # freeze layers from config
-    freeze_layers(model.transformer_model, unfrozen_layers)
-
-    # load data module
-    data_module = BlogDataModule.from_joint_config(data_module_params)
+    freeze_layers(model, unfrozen_layers)
 
     # build training module
     pretraining_module = ContrastivePretrainingModule(
@@ -81,12 +88,12 @@ def finetune(config, pretrained_model, task_name):
     # load model with head
     model_with_class_head = ModelWithClassificationHead(
         pretrained_model,
-        pretrained_model.output_embedding_dim,
+        pretrained_model.get_out_embedding_dim(),
         **classification_head_params,
     )
 
     # freeze layers from config
-    freeze_layers(pretrained_model.transformer_model, unfrozen_layers)
+    freeze_layers(pretrained_model, unfrozen_layers)
 
     # load data module
     data_path = data_module_params["data_path"]

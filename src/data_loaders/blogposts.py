@@ -105,9 +105,10 @@ class BlogDataModule(pl.LightningDataModule):
         }
         ## change tokenizer name to tokenizer object
         pretrained_tokenizer_name = collator_config.pop("pretrained_tokenizer_name")
-        collator_config["tokenizer"] = AutoTokenizer.from_pretrained(
+        self.tokenizer = AutoTokenizer.from_pretrained(
             pretrained_tokenizer_name,
         )
+        collator_config["tokenizer"] = self.tokenizer
 
         # build loader config
         self.loader_config = {
@@ -141,3 +142,9 @@ class BlogDataModule(pl.LightningDataModule):
             [len(dataset) - val_size, val_size],
         )
         return train_dataset, val_dataset
+
+    def get_padding_idx(self):
+        return self.tokenizer.pad_token_id
+
+    def get_vocab_size(self):
+        return self.tokenizer.vocab_size
