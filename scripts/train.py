@@ -5,7 +5,6 @@ import os
 import torch
 import pytorch_lightning as pl
 
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from copy import deepcopy
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -57,19 +56,7 @@ def pretrain(config):
     )
 
     # build trainer
-    callbacks = [
-        ModelCheckpoint(
-            filename="{epoch}-{val_loss:.2f}",
-            monitor="val_loss",
-            mode="min",
-        ),
-        EarlyStopping(
-            monitor="val_loss",
-            patience=10,
-            mode="min",
-        ),
-    ]
-    trainer = pl.Trainer(**trainer_params, callbacks=callbacks)
+    trainer = pl.Trainer(**trainer_params)
 
     # fit model
     trainer.fit(pretraining_module, data_module, **fit_params)
@@ -119,19 +106,7 @@ def finetune(config, pretrained_model, task_name):
     default_root_dir = trainer_params["default_root_dir"]
     trainer_params["default_root_dir"] = os.path.join(default_root_dir, task_name)
     # build trainer
-    callbacks = [
-        ModelCheckpoint(
-            filename="{epoch}-{val_f1_score:.2f}",
-            monitor="val_f1_score",
-            mode="max",
-        ),
-        EarlyStopping(
-            monitor="val_f1_score",
-            patience=10,
-            mode="max",
-        ),
-    ]
-    trainer = pl.Trainer(**trainer_params, callbacks=callbacks)
+    trainer = pl.Trainer(**trainer_params)
 
     # fit model
     trainer.fit(classification_module, data_module, **fit_params)

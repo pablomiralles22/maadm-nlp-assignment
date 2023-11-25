@@ -1,10 +1,9 @@
-import time
-import numpy as np
 import torch
 import pytorch_lightning as pl
 
-from torch.utils.data.dataloader import DataLoader
+from pytorch_lightning.callbacks import Callback, ModelCheckpoint, EarlyStopping, LearningRateMonitor
 from losses.ntxent import ntxent_loss
+from typing import Sequence
 
 
 class ContrastivePretrainingModule(pl.LightningModule):
@@ -62,3 +61,18 @@ class ContrastivePretrainingModule(pl.LightningModule):
                 "interval": "epoch",
             },
         }
+    
+    def configure_callbacks(self) -> Sequence[Callback] | Callback:
+        return super().configure_callbacks() + [
+            ModelCheckpoint(
+                filename="{epoch}-{val_loss:.2f}",
+                monitor="val_loss",
+                mode="min",
+            ),
+            EarlyStopping(
+                monitor="val_loss",
+                patience=5,
+                mode="min",
+            ),
+            LearningRateMonitor(logging_interval="step"),
+        ]

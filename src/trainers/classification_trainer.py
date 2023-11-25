@@ -3,6 +3,8 @@ import pytorch_lightning as pl
 import torchmetrics
 
 from torch.nn import functional as F
+from pytorch_lightning.callbacks import Callback, ModelCheckpoint, EarlyStopping, LearningRateMonitor
+from typing import Sequence
 
 
 class ClassificationModule(pl.LightningModule):
@@ -84,3 +86,18 @@ class ClassificationModule(pl.LightningModule):
                 "frequency": 200,
             },
         }
+
+    def configure_callbacks(self) -> Sequence[Callback] | Callback:
+        return super().configure_callbacks() + [
+            ModelCheckpoint(
+                filename="{epoch}-{val_f1_score:.2f}",
+                monitor="val_f1_score",
+                mode="max",
+            ),
+            EarlyStopping(
+                monitor="val_f1_score",
+                patience=5,
+                mode="max",
+            ),
+            LearningRateMonitor(logging_interval="step"),
+        ]
