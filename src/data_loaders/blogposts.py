@@ -68,7 +68,7 @@ class BlogDataModule(pl.LightningDataModule):
     @classmethod
     def get_default_collator_config(cls):
         return {
-            "pretrained_tokenizer_name": "roberta-base",
+            "tokenizer": "roberta-base",
             "max_len": 512,
         }
 
@@ -104,7 +104,7 @@ class BlogDataModule(pl.LightningDataModule):
             **collator_config,
         }
         ## change tokenizer name to tokenizer object
-        pretrained_tokenizer_name = collator_config.pop("pretrained_tokenizer_name")
+        pretrained_tokenizer_name = collator_config.pop("tokenizer")
         self.tokenizer = AutoTokenizer.from_pretrained(
             pretrained_tokenizer_name,
         )
