@@ -1,8 +1,6 @@
-from typing import Literal
 from transformers import AutoModel
 from models.base_model import BaseModel
-
-ReductionMethod = Literal["cls", "mean"]
+from utils.custom_types import ReductionMethod
 
 class PretrainedTransformerModel(BaseModel):
     def __init__(self, transformer_model: str, transformer_reduction: ReductionMethod = "cls"):
@@ -20,6 +18,8 @@ class PretrainedTransformerModel(BaseModel):
             x = last_hidden_state[..., 0, :]
         elif self.transformer_reduction == "mean":
             x = self.transformer_model(input_ids, attention_mask=attention_mask).pooler_output
+        elif self.transformer_reduction == "none":
+            x = self.transformer_model(input_ids, attention_mask=attention_mask).last_hidden_state
         else:
             raise ValueError(f"Invalid transformer_reduction: {self.transformer_reduction}")
         return x

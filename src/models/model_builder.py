@@ -2,8 +2,9 @@ from typing import Literal
 from models.conv1d_model import Conv1dModel
 from models.pretrained_transformer_model import PretrainedTransformerModel
 from models.ensemble_model import EnsembleModel
+from models.headed_models.headed_model_builder import HeadedModelBuilder
 
-Model = Literal["ensemble", "conv1d", "pretrained_transformer"]
+Model = Literal["ensemble", "conv1d", "pretrained_transformer", "headed_model"]
 
 
 class ModelBuilder:
@@ -16,6 +17,8 @@ class ModelBuilder:
                 return cls._build_conv1d_model(params, num_embeddings, padding_idx)
             case "pretrained_transformer":
                 return cls._build_pretrained_transformer_model(params)
+            case "headed_model":
+                return cls._build_headed_model(params, num_embeddings, padding_idx)
             case _:
                 raise ValueError(f"Invalid model name: {name}")
 
@@ -34,3 +37,14 @@ class ModelBuilder:
     @classmethod
     def _build_pretrained_transformer_model(cls, params: dict):
         return PretrainedTransformerModel(**params)
+
+    @classmethod
+    def _build_headed_model(cls, params: dict, num_embeddings: int, padding_idx: int):
+        base_model_name, base_model_params = params["base_model"]
+        head_model_name, head_model_params = params["head_model"]
+        reduction_method = params.get("reduction_method", "cls")
+        ensemble_strategy = params.get("ensemble_strategy", "concat")
+
+        base_model = cls.build(base_model_name, base_model_params, num_embeddings, padding_idx)
+        headed_model = HeadedModelBuilder.build(base_model, head_model_name, head_model_params, reduction_method, ensemble_strategy)
+        return headed_model

@@ -20,5 +20,5 @@ class ModelWithClassificationHead(nn.Module):
     ):
         x = self.model(input_ids, attention_mask=attention_mask)  # (2*BATCH_SIZE, EMBED_DIM)
         batch_size_by_2, embed_dim = x.shape
-        x = x.view(batch_size_by_2 // 2, 2 * embed_dim)  # (BATCH_SIZE, 2*EMBED_DIM)
+        x = x.reshape(batch_size_by_2 // 2, 2 * embed_dim)  # (BATCH_SIZE, 2*EMBED_DIM)
         return torch.sigmoid(self.ff(x))

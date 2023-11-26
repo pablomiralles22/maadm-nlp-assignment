@@ -41,6 +41,8 @@ class ClassificationModule(pl.LightningModule):
                 "train_loss": loss,
                 "train_f1_score": f1_score,
             },
+            on_epoch=True,
+            on_step=False,
             prog_bar=True,
             batch_size=labels.nelement(),
         )
@@ -54,6 +56,8 @@ class ClassificationModule(pl.LightningModule):
                 "val_loss": loss,
                 "val_f1_score": f1_score,
             },
+            on_epoch=True,
+            on_step=False,
             prog_bar=True,
             batch_size=labels.nelement(),
         )
