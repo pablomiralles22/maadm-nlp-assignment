@@ -11,4 +11,9 @@ python scripts/train.py --config configs/base-config.json
 - Curated version of the [Blog Authorship corpus](https://u.cs.biu.ac.il/~koppel/BlogCorpus.htm). Each directory refers to a single author. Posts shorter than 200 characters have been removed.
 
 ## Model
-Combination of `roberta-base` and a smaller convolutional model. The hypothesis is that stylistic features are mainly local, and convolutional layers have a good inductive bias for that.
+Fine-tuned `roberta-base`.
+
+## Main ideas
+- Fine-tuned on 16-bit mixed precision.
+- Data augmentation.
+- Weighted cross entropy for unbalances (in particular task 1).

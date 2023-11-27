@@ -1,0 +1,60 @@
+{
+    "model_name": "pretrained_transformer",
+    "model_params": {
+        "transformer_model": "prajjwal1/bert-medium",
+        "transformer_reduction": "cls"
+    },
+    "projection_head_params": {
+        "dropout_p": 0.1,
+        "ff_dim": 1024,
+        "output_dim": 128
+    },
+    "classification_head_params": {
+        "dropout_p": 0.1,
+        "ff_dim": 1024
+    },
+    "pretrain_params": {
+        "data_module_params": {
+            "data_path": "data/blogposts/",
+            "batch_size": 96,
+            "max_len": 512,
+            "val_ratio": 0.1,
+            "tokenizer": "prajjwal1/bert-medium"
+        },
+        "optimizer_params": {
+            "lr": 0.0001
+        },
+        "trainer_params": {
+            "fast_dev_run": 1,
+            "precision": "16-mixed",
+            "max_steps": 20000,
+            "max_epochs": 50,
+            "enable_checkpointing": true,
+            "default_root_dir": "out/small_bert/pretrained/",
+            "accelerator": "cuda",
+            "devices": [2]
+        },
+        "unfrozen_layers": 4
+    },
+    "pan_train_params": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed",
+            "batch_size": 32,
+            "max_len": 512,
+            "tokenizer": "prajjwal1/bert-medium"
+        },
+        "optimizer_params": {
+            "lr": 0.0001
+        },
+        "trainer_params": {
+            "fast_dev_run": 1,
+            "precision": "16-mixed",
+            "max_epochs": 10,
+            "enable_checkpointing": true,
+            "default_root_dir": "out/small_bert/finetuned/",
+            "accelerator": "cuda",
+            "devices": [2]
+        },
+        "unfrozen_layers": 4
+    }
+}

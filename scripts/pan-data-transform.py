@@ -96,6 +96,13 @@ def main():
         help="Path to the directory where the transformed data will be stored.",
     )
 
+    # Argument for whether to use data augmentation
+    parser.add_argument(
+        "--augment",
+        action="store_true",
+        help="Whether to use data augmentation.",
+    )
+
     args = parser.parse_args()
     for task in range(1, 4):
         for set_type in ["train", "validation"]:
@@ -105,7 +112,7 @@ def main():
             )
             target_path = os.path.join(args.target_dir, f"task{task}/{set_type}/")
             os.makedirs(target_path, exist_ok=True)
-            transform_fn = transform_with_augmentation if set_type == "train" else transform
+            transform_fn = transform_with_augmentation if set_type == "train" and args.augment is True else transform
             transform_fn(source_path, target_path)
 
 

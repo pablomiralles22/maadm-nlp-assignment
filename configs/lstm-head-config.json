@@ -1,0 +1,74 @@
+{
+    "model_name": "headed_model",
+    "model_params": {
+        "base_model": [
+            "pretrained_transformer",
+            {
+                "transformer_model": "roberta-base",
+                "transformer_reduction": "none"
+            }
+        ],
+        "head_model": [
+            "lstm",
+            {
+                "hidden_size": 512,
+                "num_layers": 2,
+                "dropout": 0.2,
+                "bidirectional": false
+            }
+        ],
+        "reduction_method": "cls",
+        "ensemble_strategy": "concat"
+    },
+    "projection_head_params": {
+        "dropout_p": 0.2,
+        "ff_dim": 1024,
+        "output_dim": 128
+    },
+    "classification_head_params": {
+        "dropout_p": 0.2,
+        "ff_dim": 1024
+    },
+    "pretrain_params": {
+        "data_module_params": {
+            "data_path": "data/blogposts/",
+            "batch_size": 96,
+            "max_len": 512,
+            "val_ratio": 0.1,
+            "tokenizer": "roberta-base"
+        },
+        "optimizer_params": {
+            "lr": 0.00005
+        },
+        "trainer_params": {
+            "precision": "16-mixed",
+            "max_steps": 20000,
+            "max_epochs": 20,
+            "enable_checkpointing": true,
+            "default_root_dir": "out/lstm_head/pretrained/",
+            "accelerator": "cuda",
+            "devices": [2]
+        },
+        "unfrozen_layers": 1
+    },
+    "pan_train_params": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed",
+            "batch_size": 64,
+            "max_len": 512,
+            "tokenizer": "roberta-base"
+        },
+        "optimizer_params": {
+            "lr": 0.00005
+        },
+        "trainer_params": {
+            "precision": "16-mixed",
+            "max_epochs": 10,
+            "enable_checkpointing": true,
+            "default_root_dir": "out/lstm_head/finetuned/",
+            "accelerator": "cuda",
+            "devices": [2]
+        },
+        "unfrozen_layers": 1
+    }
+}

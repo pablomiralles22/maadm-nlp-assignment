@@ -29,12 +29,12 @@ class ContrastivePretrainingModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss = self._step(batch, batch_idx)
-        self.log_dict({"train_loss": loss}, on_step=False, on_epoch=True, prog_bar=True)
+        self.log_dict({"train_loss": loss}, on_epoch=True, on_step=False, prog_bar=True)
         return {"loss": loss}
 
     def validation_step(self, batch, batch_idx):
         loss = self._step(batch, batch_idx)
-        self.log_dict({"val_loss": loss}, on_step=False, on_epoch=True, prog_bar=True)
+        self.log_dict({"val_loss": loss}, on_epoch=True, on_step=False, prog_bar=True)
         return {"loss": loss}
 
     def _step(self, batch, batch_idx):

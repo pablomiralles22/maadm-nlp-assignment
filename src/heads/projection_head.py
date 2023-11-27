@@ -11,8 +11,8 @@ class ModelWithProjectionHead(nn.Module):
             nn.Dropout(dropout_p)
         )
 
-    def forward(self, input_ids, attention_mask):
-        x = self.model(input_ids, attention_mask=attention_mask)
+    def forward(self, input_ids, attention_mask, token_type_ids=None):
+        x = self.model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         return self.projection_head(x)
 
     def get_output_embedding_dim(self):
