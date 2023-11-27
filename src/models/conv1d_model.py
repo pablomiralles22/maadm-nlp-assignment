@@ -81,7 +81,8 @@ class Conv1dModel(BaseModel):
     def forward(
         self,
         input_ids,  # (...BATCH_SIZE, SEQ_LEN)
-        _,
+        attention_mask,  # (...BATCH_SIZE, SEQ_LEN)
+        token_type_ids=None,  # (...BATCH_SIZE, SEQ_LEN)
     ):
         x = self.embeddings(input_ids)  # (...BATCH_SIZE, SEQ_LEN, EMBEDDING_DIM)
         x = x.transpose(-1, -2)   # (...BATCH_SIZE, EMBEDDING_DIM, SEQ_LEN)

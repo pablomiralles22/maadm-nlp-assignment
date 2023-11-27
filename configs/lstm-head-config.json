@@ -11,10 +11,10 @@
         "head_model": [
             "lstm",
             {
-                "hidden_size": 256,
-                "num_layers": 1,
-                "dropout": 0.1,
-                "bidirectional": true
+                "hidden_size": 512,
+                "num_layers": 2,
+                "dropout": 0.2,
+                "bidirectional": false
             }
         ],
         "reduction_method": "cls",
@@ -38,28 +38,28 @@
             "tokenizer": "roberta-base"
         },
         "optimizer_params": {
-            "lr": 0.0001
+            "lr": 0.00005
         },
         "trainer_params": {
             "precision": "16-mixed",
             "max_steps": 20000,
-            "max_epochs": 10,
+            "max_epochs": 20,
             "enable_checkpointing": true,
             "default_root_dir": "out/lstm_head/pretrained/",
             "accelerator": "cuda",
             "devices": [2]
         },
-        "unfrozen_layers": 0
+        "unfrozen_layers": 1
     },
     "pan_train_params": {
         "data_module_params": {
             "data_path": "data/pan23/transformed",
-            "batch_size": 32,
+            "batch_size": 64,
             "max_len": 512,
             "tokenizer": "roberta-base"
         },
         "optimizer_params": {
-            "lr": 0.0001
+            "lr": 0.00005
         },
         "trainer_params": {
             "precision": "16-mixed",
@@ -69,6 +69,6 @@
             "accelerator": "cuda",
             "devices": [2]
         },
-        "unfrozen_layers": 0
+        "unfrozen_layers": 1
     }
 }

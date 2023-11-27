@@ -42,7 +42,7 @@ class ClassificationModule(pl.LightningModule):
                 "train_f1_score": f1_score,
             },
             on_epoch=True,
-            on_step=False,
+            on_step=True,
             prog_bar=True,
             batch_size=labels.nelement(),
         )
@@ -66,9 +66,10 @@ class ClassificationModule(pl.LightningModule):
     def _step(self, batch, batch_idx):
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
+        token_type_ids = batch["token_type_ids"]
         labels = batch["labels"].float().view(-1, 1)
 
-        logits = self.model(input_ids, attention_mask)  # (BATCH_SIZE, 1)
+        logits = self.model(input_ids, attention_mask, token_type_ids)  # (BATCH_SIZE, 1)
         loss = F.binary_cross_entropy_with_logits(
             logits, labels, pos_weight=self.pos_weight, weight=self.weight,
         )

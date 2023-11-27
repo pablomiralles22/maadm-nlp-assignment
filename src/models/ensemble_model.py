@@ -12,6 +12,6 @@ class EnsembleModel(BaseModel):
     def get_out_embedding_dim(self):
         return self.out_embedding_dim
 
-    def forward(self, input_ids, attention_mask):
-        x = [model.forward(input_ids, attention_mask) for model in self.models]
+    def forward(self, input_ids, attention_mask, token_type_ids):
+        x = [model.forward(input_ids, attention_mask, token_type_ids) for model in self.models]
         return torch.cat(x, dim=-1)

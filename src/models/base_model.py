@@ -7,5 +7,5 @@ class BaseModel(nn.Module, ABC):
         raise NotImplementedError("get_out_embedding_dim not implemented")
 
     @abstractmethod
-    def forward(self, input_ids, attention_mask):
+    def forward(self, input_ids, attention_mask, token_type_ids=None):
         raise NotImplementedError("forward not implemented")

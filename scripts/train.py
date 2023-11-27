@@ -23,6 +23,10 @@ from utils.freeze_layers import freeze_layers
 
 
 def pretrain(config):
+    if "pretrain_params" not in config:
+        print("No pretraining params found in config. Skipping pretraining...")
+        return
+
     print("Starting pretraining...")
     # unpack config
     model_name = config["model_name"]
@@ -75,6 +79,9 @@ def finetune(config, pretrained_model, task_name):
     print(f"Starting finetuning for task {task_name}...")
 
     # unpack config
+    model_name = config["model_name"]
+    model_params = config["model_params"]
+
     classification_head_params = config["classification_head_params"]
     pan_train_params = config["pan_train_params"]
 
@@ -85,7 +92,21 @@ def finetune(config, pretrained_model, task_name):
 
     unfrozen_layers = pan_train_params["unfrozen_layers"]
 
+    # load data module
+    data_path = data_module_params["data_path"]
+    task_data_path = os.path.join(data_path, task_name)
+    data_module_params["data_path"] = task_data_path
+
+    data_module = PAN23DataModule.from_joint_config(data_module_params)
+
     # load model with head
+    if pretrained_model is None:
+        pretrained_model = ModelBuilder.build(
+            model_name,
+            model_params,
+            data_module.get_vocab_size(),
+            data_module.get_padding_idx(),
+        )
     model_with_class_head = ModelWithClassificationHead(
         pretrained_model,
         pretrained_model.get_out_embedding_dim(),
@@ -94,13 +115,6 @@ def finetune(config, pretrained_model, task_name):
 
     # freeze layers from config
     freeze_layers(pretrained_model, unfrozen_layers)
-
-    # load data module
-    data_path = data_module_params["data_path"]
-    task_data_path = os.path.join(data_path, task_name)
-    data_module_params["data_path"] = task_data_path
-
-    data_module = PAN23DataModule.from_joint_config(data_module_params)
 
     # build training module
     classification_module = ClassificationModule(
@@ -120,15 +134,11 @@ def finetune(config, pretrained_model, task_name):
 
     return model_with_class_head
 
-
-PRETRAINED_STORE_PATH = "/tmp/pretrained_model.pt"
-
 def run(config):
     pretrained_model = pretrain(deepcopy(config))
-    torch.save(pretrained_model, PRETRAINED_STORE_PATH)  # to start again for each task
-    finetune(deepcopy(config), torch.load(PRETRAINED_STORE_PATH), "task1")
-    finetune(deepcopy(config), torch.load(PRETRAINED_STORE_PATH), "task2")
-    finetune(deepcopy(config), torch.load(PRETRAINED_STORE_PATH), "task3")
+    finetune(deepcopy(config), pretrained_model, "task1")
+    finetune(deepcopy(config), pretrained_model, "task2")
+    finetune(deepcopy(config), pretrained_model, "task3")
 
 
 ###### Main ######

@@ -29,12 +29,16 @@ class PAN23Dataset(Dataset):
 
 
 class PAN23CollatorFn:
-    def __init__(self, tokenizer, max_len):
+    def __init__(self, tokenizer, max_len, joint_pairs):
         self.tokenizer = tokenizer
         self.max_len = max_len
+        self.joint_pairs = joint_pairs
 
     def __call__(self, batch):
-        texts = [item[label] for item in batch for label in ["text1", "text2"]]  # (2*batch_size,)
+        if self.joint_pairs is False:
+            texts = [item[label] for item in batch for label in ["text1", "text2"]]  # (2*batch_size,)
+        else:
+            texts = [(item["text1"], item["text2"]) for item in batch]  # (batch_size,)
         labels = [item["label"] for item in batch]  # (batch_size,)
 
         encoding = self.tokenizer.batch_encode_plus(
@@ -44,12 +48,14 @@ class PAN23CollatorFn:
             add_special_tokens=True,
             truncation=True,
             return_attention_mask=True,
+            return_token_type_ids=True,
             return_tensors="pt",
         )
 
         return dict(
             input_ids=encoding["input_ids"],
             attention_mask=encoding["attention_mask"],
+            token_type_ids=encoding["token_type_ids"],
             labels=torch.tensor(labels),
         )
 
@@ -60,6 +66,7 @@ class PAN23DataModule(pl.LightningDataModule):
         return {
             "tokenizer": "roberta-base",
             "max_len": 512,
+            "joint_pairs": False,
         }
 
     @classmethod
@@ -94,9 +101,10 @@ class PAN23DataModule(pl.LightningDataModule):
         }
         ## change tokenizer name to tokenizer object
         pretrained_tokenizer_name = collator_config.pop("tokenizer")
-        collator_config["tokenizer"] = AutoTokenizer.from_pretrained(
+        self.tokenizer = AutoTokenizer.from_pretrained(
             pretrained_tokenizer_name,
         )
+        collator_config["tokenizer"] = self.tokenizer
 
         # build loader config
         self.loader_config = {
@@ -125,3 +133,9 @@ class PAN23DataModule(pl.LightningDataModule):
 
     def get_positive_ratio(self):
         return self.train_dataset.get_positive_ratio()
+
+    def get_padding_idx(self):
+        return self.tokenizer.pad_token_id
+
+    def get_vocab_size(self):
+        return self.tokenizer.vocab_size
