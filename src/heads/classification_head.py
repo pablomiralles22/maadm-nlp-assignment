@@ -1,15 +1,19 @@
 import torch
 
 from torch import nn
+from models.base_model import BaseModel
+
+def get_model_with_classification_head(
+    model: BaseModel,
+    ff_dim: int,
+    dropout_p=0.1,
+):
+    input_dim = model.get_out_embedding_dim()
+    return ModelWithClassificationHead(model, input_dim, ff_dim, dropout_p)
 
 class ModelWithClassificationHead(nn.Module):
-    def __init__(self, model, input_dim, ff_dim, dropout_p=0.1, joint_pairs=False):
+    def __init__(self, model, input_dim, ff_dim, dropout_p=0.1):
         super(ModelWithClassificationHead, self).__init__()
-        self.joint_pairs = joint_pairs
-
-        if joint_pairs is False:
-            input_dim *= 2
-
         self.model = model
         self.ff = nn.Sequential(
             nn.Linear(input_dim, ff_dim),
@@ -18,16 +22,6 @@ class ModelWithClassificationHead(nn.Module):
             nn.Linear(ff_dim, 1),
         )
 
-    def forward(
-        self, 
-        input_ids,
-        attention_mask,
-        token_type_ids=None,
-    ):
-        x = self.model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-
-        if self.joint_pairs is False:  # reshape
-            batch_size_by_2, embed_dim = x.shape
-            x = x.reshape(batch_size_by_2 // 2, 2 * embed_dim)
-
+    def forward(self, *args, **kwargs):
+        x = self.model(*args, **kwargs)
         return torch.sigmoid(self.ff(x))

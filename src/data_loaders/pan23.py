@@ -4,6 +4,7 @@ import torch
 import pytorch_lightning as pl
 
 from torch.utils.data import Dataset, DataLoader
+from utils.custom_types import TokenizerEncoding
 from transformers import AutoTokenizer
 
 class PAN23Dataset(Dataset):
@@ -29,19 +30,34 @@ class PAN23Dataset(Dataset):
 
 
 class PAN23CollatorFn:
-    def __init__(self, tokenizer, max_len, joint_pairs):
+    def __init__(self, tokenizer, max_len):
         self.tokenizer = tokenizer
         self.max_len = max_len
-        self.joint_pairs = joint_pairs
 
     def __call__(self, batch):
-        if self.joint_pairs is False:
-            texts = [item[label] for item in batch for label in ["text1", "text2"]]  # (2*batch_size,)
-        else:
-            texts = [(item["text1"], item["text2"]) for item in batch]  # (batch_size,)
+        disjoint_texts = [item[label] for item in batch for label in ["text1", "text2"]]  # (2*batch_size,)
+        joint_texts = [(item["text1"], item["text2"]) for item in batch]  # (batch_size,)
         labels = [item["label"] for item in batch]  # (batch_size,)
 
-        encoding = self.tokenizer.batch_encode_plus(
+        disjoint_encoding_dict = self.__encode(disjoint_texts)
+        joint_encoding_dict = self.__encode(joint_texts)
+
+        return dict(
+            disjoint_encoding=TokenizerEncoding(
+                input_ids=disjoint_encoding_dict["input_ids"],
+                attention_mask=disjoint_encoding_dict["attention_mask"],
+                token_type_ids=disjoint_encoding_dict["token_type_ids"],
+            ),
+            joint_encoding = TokenizerEncoding(
+                input_ids=joint_encoding_dict["input_ids"],
+                attention_mask=joint_encoding_dict["attention_mask"],
+                token_type_ids=joint_encoding_dict["token_type_ids"],
+            ),
+            labels=torch.tensor(labels),
+        )
+
+    def __encode(self, texts: list[str]):
+        return self.tokenizer.batch_encode_plus(
             texts,
             padding="max_length",
             max_length=self.max_len,
@@ -52,13 +68,6 @@ class PAN23CollatorFn:
             return_tensors="pt",
         )
 
-        return dict(
-            input_ids=encoding["input_ids"],
-            attention_mask=encoding["attention_mask"],
-            token_type_ids=encoding["token_type_ids"],
-            labels=torch.tensor(labels),
-        )
-
 
 class PAN23DataModule(pl.LightningDataModule):
     @classmethod
@@ -66,7 +75,6 @@ class PAN23DataModule(pl.LightningDataModule):
         return {
             "tokenizer": "roberta-base",
             "max_len": 512,
-            "joint_pairs": False,
         }
 
     @classmethod

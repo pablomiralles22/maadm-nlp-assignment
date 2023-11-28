@@ -12,7 +12,7 @@ sys.path.append(project_src_path)
 
 from models.model_builder import ModelBuilder
 from heads.projection_head import ModelWithProjectionHead
-from heads.classification_head import ModelWithClassificationHead
+from heads.classification_head import get_model_with_classification_head
 from trainers.contrastive_pretrainer import ContrastivePretrainingModule
 from trainers.classification_trainer import ClassificationModule
 from data_loaders.blogposts import BlogDataModule
@@ -106,9 +106,8 @@ def finetune(config, pretrained_model, task_name):
             data_module.get_vocab_size(),
             data_module.get_padding_idx(),
         )
-    model_with_class_head = ModelWithClassificationHead(
+    model_with_class_head = get_model_with_classification_head(
         pretrained_model,
-        pretrained_model.get_out_embedding_dim(),
         **classification_head_params,
     )
 

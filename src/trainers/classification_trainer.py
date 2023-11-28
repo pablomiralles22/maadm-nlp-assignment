@@ -64,12 +64,11 @@ class ClassificationModule(pl.LightningModule):
         return {"loss": loss, "logits": logits, "labels": labels}
 
     def _step(self, batch, batch_idx):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        token_type_ids = batch["token_type_ids"]
+        joint_encoding = batch["joint_encoding"]
+        disjoint_encoding = batch["disjoint_encoding"]
         labels = batch["labels"].float().view(-1, 1)
 
-        logits = self.model(input_ids, attention_mask, token_type_ids)  # (BATCH_SIZE, 1)
+        logits = self.model.forward(joint_encoding, disjoint_encoding)  # (BATCH_SIZE, 1)
         loss = F.binary_cross_entropy_with_logits(
             logits, labels, pos_weight=self.pos_weight, weight=self.weight,
         )

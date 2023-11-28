@@ -8,6 +8,6 @@ def reduce(
         case "cls":
             return x[:, 0, :]
         case "mean":
-            return x.mean(dim=1)
+            return x.mean(dim=-1)
         case _:
             raise ValueError(f"Invalid reduction method: {reduction_method}")

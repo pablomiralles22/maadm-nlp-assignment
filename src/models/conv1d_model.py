@@ -75,15 +75,15 @@ class Conv1dModel(BaseModel):
         # calc output embedding dim
         self.output_embedding_dim = conv_layers_params[-1]["conv_params"]["out_channels"]
 
-    def get_out_embedding_dim(self):
+    def _get_out_embedding_dim(self):
         return self.output_embedding_dim
 
-    def forward(
+    def _forward(
         self,
         input_ids,  # (...BATCH_SIZE, SEQ_LEN)
         attention_mask,  # (...BATCH_SIZE, SEQ_LEN)
         token_type_ids=None,  # (...BATCH_SIZE, SEQ_LEN)
-    ):
+    ):  # (...BATCH_SIZE, EMBEDDING_DIM)
         x = self.embeddings(input_ids)  # (...BATCH_SIZE, SEQ_LEN, EMBEDDING_DIM)
         x = x.transpose(-1, -2)   # (...BATCH_SIZE, EMBEDDING_DIM, SEQ_LEN)
         for layer in self.layers:
