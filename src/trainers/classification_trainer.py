@@ -76,19 +76,19 @@ class ClassificationModule(pl.LightningModule):
         return loss, logits, labels
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
+        optimizer = torch.optim.AdamW(
             params=self.model.parameters(), **self.optimizer_config
         )
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="max", factor=0.5
+            optimizer, mode="min", factor=0.75
         )
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": scheduler,
-                "monitor": "train_f1_score",
+                "monitor": "train_loss",
                 "interval": "step",
-                "frequency": 200,
+                "frequency": 500,
             },
         }
 
@@ -101,7 +101,7 @@ class ClassificationModule(pl.LightningModule):
             ),
             EarlyStopping(
                 monitor="val_f1_score",
-                patience=5,
+                patience=3,
                 mode="max",
             ),
             LearningRateMonitor(logging_interval="step"),

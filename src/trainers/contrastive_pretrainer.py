@@ -47,7 +47,7 @@ class ContrastivePretrainingModule(pl.LightningModule):
         return ntxent_loss(emb_1, emb_2)
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
+        optimizer = torch.optim.AdamW(
             params=self.model.parameters(), **self.optimizer_config
         )
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(

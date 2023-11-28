@@ -2,7 +2,6 @@ import argparse
 import sys
 import json
 import os
-import torch
 import pytorch_lightning as pl
 
 from copy import deepcopy
@@ -132,13 +131,13 @@ def finetune(config, pretrained_model, task_name):
     # fit model
     trainer.fit(classification_module, data_module, **fit_params)
 
-    return model_with_class_head
+    return pretrained_model
 
 def run(config):
     pretrained_model = pretrain(deepcopy(config))
     finetune(deepcopy(config), pretrained_model, "task1")
-    finetune(deepcopy(config), pretrained_model, "task2")
-    finetune(deepcopy(config), pretrained_model, "task3")
+    pretrained_model = finetune(deepcopy(config), pretrained_model, "task2")
+    pretrained_model = finetune(deepcopy(config), pretrained_model, "task3")
 
 
 ###### Main ######
