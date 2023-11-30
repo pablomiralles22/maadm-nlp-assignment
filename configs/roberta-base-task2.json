@@ -1,7 +1,7 @@
 {
     "model_name": "pretrained_transformer",
     "model_params": {
-        "transformer_model": "pablomiralles22/maadm-nlp-pan23-task2-roberta-base-finetuned",
+        "transformer_model": "maadm-nlp-group-b/maadm-nlp-pan23-task2-roberta-base-finetuned",
         "transformer_reduction": "cls",
         "hidden_dropout_prob": 0.25,
         "token_env_file": ".env"
@@ -12,12 +12,12 @@
     },
     "default_train_params": {
         "data_module_params": {
-            "batch_size": 64,
+            "batch_size": 32,
             "max_len": 512,
             "tokenizer": "roberta-base"
         },
         "optimizer_params": {
-            "lr": 0.00003
+            "lr": 0.00001
         },
         "trainer_params": {
             "precision": "16-mixed",
@@ -26,7 +26,7 @@
             "accelerator": "cuda",
             "devices": [2]
         },
-        "unfrozen_layers": 8
+        "unfrozen_layers": 12
     },
     "@task2_override": {
         "data_module_params": {

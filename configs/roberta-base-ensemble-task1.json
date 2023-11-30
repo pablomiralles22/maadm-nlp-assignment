@@ -1,0 +1,69 @@
+{
+    "model_name": "ensemble",
+    "model_params": {
+        "models": {
+            "conv1d": {
+                "layer_params": [
+                    [ "conv", { "in_channels": 64, "out_channels": 128, "groups": 1, "kernel_size": 5 } ],
+                    [ "conv", { "in_channels": 128, "out_channels": 128, "groups": 1, "kernel_size": 3 } ],
+                    [ "max_pool", { "kernel_size": 2 } ],
+                    [ "relu", {} ],
+                    [ "ff", { "in_dim": 128, "out_dim": 128, "ff_dim": 256 } ],
+                    [ "dropout", { "p": 0.4 } ],
+
+                    [ "conv", { "in_channels": 128, "out_channels": 256, "groups": 1, "kernel_size": 5 } ],
+                    [ "conv", { "in_channels": 256, "out_channels": 256, "groups": 1, "kernel_size": 3 } ],
+                    [ "max_pool", { "kernel_size": 2 } ],
+                    [ "relu", {} ],
+                    [ "ff", { "in_dim": 256, "out_dim": 256, "ff_dim": 512 } ],
+                    [ "dropout", { "p": 0.3 } ],
+
+                    [ "conv", { "in_channels": 256, "out_channels": 512, "groups": 1, "kernel_size": 5 } ],
+                    [ "conv", { "in_channels": 512, "out_channels": 512, "groups": 1, "kernel_size": 3 } ],
+                    [ "max_pool", { "kernel_size": 2 } ],
+                    [ "ff", { "in_dim": 512, "out_dim": 512, "ff_dim": 1024 } ],
+                    [ "relu", {} ],
+                    [ "dropout", { "p": 0.2 } ]
+                ]
+            },
+            "pretrained_transformer": {
+                "transformer_model": "maadm-nlp-group-b/maadm-nlp-pan23-task1-roberta-base-finetuned",
+                "transformer_reduction": "cls",
+                "hidden_dropout_prob": 0.25,
+                "token_env_file": ".env"
+            }
+        }
+    },
+    "classification_head_params": {
+        "dropout_p": 0.25,
+        "ff_dim": 2048
+    },
+    "default_train_params": {
+        "data_module_params": {
+            "batch_size": 64,
+            "max_len": 512,
+            "tokenizer": "roberta-base"
+        },
+        "optimizer_params": {
+            "lr": 0.00001
+        },
+        "trainer_params": {
+            "precision": "16-mixed",
+            "max_epochs": 20,
+            "enable_checkpointing": true,
+            "accelerator": "cuda",
+            "devices": [2]
+        },
+        "unfrozen_layers": 0
+    },
+    "@task1_override": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed/task1"
+        },
+        "trainer_params": {
+            "default_root_dir": "out/roberta-base-ensemble/finetuned/task1"
+        }
+    },
+    "@task2_override": { "skip": true },
+    "@task3_override": { "skip": true }
+}

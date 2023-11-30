@@ -10,13 +10,11 @@
         "ff_dim": 2048,
         "joint_pairs": true
     },
-    "pan_train_params": {
+    "default_train_params": {
         "data_module_params": {
-            "data_path": "data/pan23/transformed",
             "batch_size": 64,
             "max_len": 512,
-            "tokenizer": "roberta-base",
-            "joint_pairs": true
+            "tokenizer": "roberta-base"
         },
         "optimizer_params": {
             "lr": 0.00002
@@ -24,12 +22,35 @@
         "trainer_params": {
             "precision": "16-mixed",
             "max_epochs": 10,
-            "min_steps": 10000,
             "enable_checkpointing": true,
-            "default_root_dir": "out/roberta-base/finetuned/",
             "accelerator": "cuda",
             "devices": [2]
         },
         "unfrozen_layers": 6
+    },
+    "@task1_override": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed/task1"
+        },
+        "trainer_params": {
+            "default_root_dir": "out/roberta-base/finetuned/task1"
+        }
+    },
+    "@task2_override": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed/task2"
+        },
+        "trainer_params": {
+            "default_root_dir": "out/roberta-base/finetuned/task2",
+            "val_check_interval": 0.5
+        }
+    },
+    "@task3_override": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed/task3"
+        },
+        "trainer_params": {
+            "default_root_dir": "out/roberta-base/finetuned/task3"
+        }
     }
 }

@@ -26,7 +26,7 @@ micromamba run -n master-nlp python scripts/upload_pretrained_transformer.py \
     --checkpoint out/roberta-base/finetuned/task1/lightning_logs/version_13/checkpoints/epoch=14-val_f1_score=0.99.ckpt \
     --task 1 \
     --hf-token <YOUR_TOKEN> \
-    --hf-repository pablomiralles22/maadm-nlp-pan23-task1-roberta-base-finetuned
+    --hf-repository maadm-nlp-group-b/maadm-nlp-pan23-task1-roberta-base-finetuned
 ```
 
 ## Training
