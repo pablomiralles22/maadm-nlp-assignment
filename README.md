@@ -17,3 +17,15 @@ Fine-tuned `roberta-base`.
 - Fine-tuned on 16-bit mixed precision.
 - Data augmentation.
 - Weighted cross entropy for unbalances (in particular task 1).
+
+## Training
+- `roberta-base`.
+    - **Task 1**
+       - 10 epochs, 6 layers, `out/roberta-base/finetuned/task1/lightning_logs/version_12/checkpoints`
+       - 20 epochs, 8 layers, `out/roberta-base/finetuned/task1/lightning_logs/version_12/checkpoints`
+    - **Task 2**
+       - 10 epochs, 6 layers, `out/roberta-base/finetuned/task1/lightning_logs/version_12/checkpoints`
+       - 9 epochs, 8 layers, `out/roberta-base/finetuned/task1/lightning_logs/version_12/checkpoints`
+    - **Task 3**
+       - 10 epochs, 6 layers, `out/roberta-base/finetuned/task1/lightning_logs/version_12/checkpoints`
+       - 9 epochs, 8 layers, `out/roberta-base/finetuned/task1/lightning_logs/version_12/checkpoints`

@@ -100,7 +100,7 @@ class ClassificationModule(pl.LightningModule):
             ),
             EarlyStopping(
                 monitor="val_f1_score",
-                patience=3,
+                patience=10,
                 mode="max",
             ),
             LearningRateMonitor(logging_interval="step"),

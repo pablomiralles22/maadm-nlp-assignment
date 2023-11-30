@@ -1,19 +1,30 @@
+from typing import ClassVar
 from transformers import AutoModel
 from models.base_model import BaseModel
 from utils.custom_types import ReductionMethod
+from dotenv import dotenv_values
 
 
 class PretrainedTransformerModel(BaseModel):
+    __TOKEN_ENV_KEY: ClassVar[str] = "HUGGINGFACE_READ_TOKEN"
+
     def __init__(
         self,
         transformer_model: str,
         transformer_reduction: ReductionMethod = "cls",
         joint_forward: bool = True,
+        token_env_file: str = None,
         **kwargs,
     ):
         super(PretrainedTransformerModel, self).__init__()
         self.transformer_reduction = transformer_reduction
-        self.transformer_model = AutoModel.from_pretrained(transformer_model, **kwargs)
+
+        token = None
+        if token_env_file is not None:
+            env_config = dotenv_values(token_env_file)
+            token = env_config[self.__TOKEN_ENV_KEY]
+
+        self.transformer_model = AutoModel.from_pretrained(transformer_model, **kwargs, token=token)
         self.output_embedding_dim = (
             self.transformer_model.embeddings.word_embeddings.weight.shape[1]
         )

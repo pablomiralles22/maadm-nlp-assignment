@@ -1,6 +1,5 @@
 from models.pretrained_transformer_model import PretrainedTransformerModel
 from models.ensemble_model import EnsembleModel
-from models.headed_models.headed_model import HeadedModel
 
 def freeze_layers_transformer(transformer_model, num_unfrozen_layers):
     for param in transformer_model.parameters():
@@ -18,5 +17,3 @@ def freeze_layers(model, num_unfrozen_layers):
     elif isinstance(model, EnsembleModel) is True:
         for submodel in model.models:
             freeze_layers(submodel, num_unfrozen_layers)
-    elif isinstance(model, HeadedModel) is True:
-        freeze_layers(model.base_model, num_unfrozen_layers)
