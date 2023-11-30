@@ -18,6 +18,17 @@ Fine-tuned `roberta-base`.
 - Data augmentation.
 - Weighted cross entropy for unbalances (in particular task 1).
 
+## Uploading a model
+
+```bash
+micromamba run -n master-nlp python scripts/upload_pretrained_transformer.py \
+    --model-config configs/roberta-base-task1.json \
+    --checkpoint out/roberta-base/finetuned/task1/lightning_logs/version_13/checkpoints/epoch=14-val_f1_score=0.99.ckpt \
+    --task 1 \
+    --hf-token <YOUR_TOKEN> \
+    --hf-repository pablomiralles22/maadm-nlp-pan23-task1-roberta-base-finetuned
+```
+
 ## Training
 - `roberta-base`.
     - **Task 1**

@@ -1,7 +1,7 @@
 {
     "model_name": "pretrained_transformer",
     "model_params": {
-        "transformer_model": "pablomiralles22/maadm-nlp-pan23-task1-roberta-base-finetuned",
+        "transformer_model": "pablomiralles22/maadm-nlp-pan23-task2-roberta-base-finetuned",
         "transformer_reduction": "cls",
         "hidden_dropout_prob": 0.25,
         "token_env_file": ".env"
