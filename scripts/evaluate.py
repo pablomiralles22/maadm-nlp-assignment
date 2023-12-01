@@ -71,7 +71,10 @@ def build_validation_dataset_for_task(task: int, path: str) -> OriginalPAN23Data
 
 def predict(model: BaseModel, batch: dict):
     labels = batch["labels"].float().view(-1, 1)
-    logits = model.forward(batch["joint_encoding"], batch["disjoint_encoding"])
+    logits = model.forward(
+        batch["joint_encoding"],
+        batch["disjoint_encoding"],
+    )
     predictions = torch.sigmoid(logits) > 0.5
     return predictions, labels
 
@@ -89,7 +92,7 @@ def evaluate(model: BaseModel, dataset: OriginalPAN23Dataset, collator_fn: PAN23
         if idx % 50 != 0:
             continue
         print(f"Average F1 score up to document {idx+1}: {np.mean(f1_scores):.4f}")
-    print(f"Average F1 score: {np.mean(f1_scores):.4f)}")
+    print(f"Average F1 score: {np.mean(f1_scores):.4f}")
 
 def load_model_and_data_module(
     model_config: dict, checkpoint_path: str, task: str
@@ -182,6 +185,9 @@ def build_argparse():
 
 
 def main():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    torch.set_default_device(device)
+
     parser = build_argparse()
     args = parser.parse_args()
 
