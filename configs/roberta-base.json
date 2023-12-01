@@ -8,7 +8,7 @@
     "classification_head_params": {
         "dropout_p": 0.25,
         "ff_dim": 2048,
-        "joint_pairs": true
+        "num_hidden_layers": 2
     },
     "default_train_params": {
         "data_module_params": {

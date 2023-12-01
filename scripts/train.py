@@ -32,6 +32,7 @@ def finetune(config, initial_model, task_name):
         config[f"@{task_name}_override"],
     )
 
+    # skip task if specified
     if train_params.get("skip") is True:
         print(f"Skipping task {task_name}...")
         return
@@ -82,6 +83,7 @@ def finetune(config, initial_model, task_name):
 
 def run(config):
     finetune(deepcopy(config), None, "task1")
+    # do not reuse the model from task 1, as it is mostly adapted for topic detection
     model = finetune(deepcopy(config), None, "task2")
     model = finetune(deepcopy(config), model, "task3")
 

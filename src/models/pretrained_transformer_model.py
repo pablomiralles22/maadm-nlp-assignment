@@ -6,6 +6,31 @@ from dotenv import dotenv_values
 
 
 class PretrainedTransformerModel(BaseModel):
+    """
+    A class representing a pretrained transformer model.
+
+    Args:
+        transformer_model (str): The name or path of the pretrained transformer model.
+        transformer_reduction (ReductionMethod, optional): The method used to reduce the transformer output. Defaults to "cls".
+        joint_forward (bool, optional): Whether to perform joint forward pass. Defaults to True.
+        token_env_file (str, optional): The path to the file containing the token environment variable. Defaults to None.
+            This is only needed if the transformer model is private, and a token is required to access it.
+        **kwargs: Additional keyword arguments to be passed to the AutoModel.from_pretrained() method.
+
+    Attributes:
+        transformer_reduction (ReductionMethod): The method used to reduce the transformer output.
+        transformer_model (AutoModel): The pretrained transformer model.
+        output_embedding_dim (int): The dimension of the output embeddings.
+        joint_forward (bool): Whether to perform joint forward pass.
+
+    Methods:
+        _get_out_embedding_dim(): Returns the dimension of the output embeddings.
+        _forward(input_ids, attention_mask, token_type_ids=None): Performs the forward pass of the model.
+        _reduce(out): Reduces the output of the transformer model based on the specified reduction method.
+            It might return the CLS token embedding, the mean of the embeddings, or the entire sequence of embeddings.
+        does_joint_forward(): Returns whether the model processes separate text pairs jointly.
+    """
+
     __TOKEN_ENV_KEY: ClassVar[str] = "HUGGINGFACE_READ_TOKEN"
 
     def __init__(
