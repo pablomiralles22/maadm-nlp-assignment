@@ -3,82 +3,112 @@ import sys
 import torch
 import json
 import argparse
-import re
 import numpy as np
-import torchmetrics
-from transformers import AutoTokenizer, AutoModel
+
+from torch.utils.data import Dataset
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 project_src_path = os.path.join(dir_path, "..", "src")
 sys.path.append(project_src_path)
 
 from models.model_builder import ModelBuilder
+from models.base_model import BaseModel
 from heads.classification_head import ModelWithClassificationHead
 from data_loaders.pan23 import PAN23DataModule, PAN23CollatorFn
 from utils.merge_dicts import merge_dicts
-#from pan-data-transform import files_to_dicts # error
 
 
-def predict(model, batch):
-    model.eval()
+class OriginalPAN23Dataset(Dataset):
+    """
+    A custom dataset class for loading PAN23 data, as given in its original format.
+    This is useful for evaluating the performance of a model with the same setting
+    as in other works. Each index in this dataset represents a single document.
 
+    Args:
+        path (str): The path to the directory containing the data files.
+
+    Attributes:
+        path (str): The path to the directory containing the data files.
+        len (int): The number of data files in the directory.
+
+    Methods:
+        __len__(): Returns the length of the dataset.
+        __getitem__(index): Returns the data item at the specified index.
+    """
+
+    def __init__(self, path):
+        self.path = path
+        self.len = len(os.listdir(path)) // 2  # two files per doc
+
+    def __len__(self):
+        return self.len
+
+    def __getitem__(self, index):
+        labels = self.__get_truths(index)
+        paragraphs = self.__get_paragraphs(index)
+
+        return [
+            { "label": label, "text1": text1, "text2": text2 }
+            for label, text1, text2 in zip(labels, paragraphs, paragraphs[1:])
+        ]
+
+    def __get_truths(self, index: int) -> list[int]:
+        path = os.path.join(self.path, f"truth-problem-{index+1}.json")
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)["changes"]
+
+    def __get_paragraphs(self, index: int) -> list[str]:
+        path = os.path.join(self.path, f"problem-{index+1}.txt")
+        with open(path, "r", encoding="utf-8") as f:
+            return f.readlines()
+
+def build_validation_dataset_for_task(task: int, path: str) -> OriginalPAN23Dataset:
+    path = os.path.join(
+        path,
+        f"pan23-multi-author-analysis-dataset{task}/pan23-multi-author-analysis-dataset{task}-validation",
+    )
+    return OriginalPAN23Dataset(path)
+
+def predict(model: BaseModel, batch: dict):
     labels = batch["labels"].float().view(-1, 1)
+    logits = model.forward(batch["joint_encoding"], batch["disjoint_encoding"])
+    predictions = torch.sigmoid(logits) > 0.5
+    return predictions, labels
 
-    logits = model.forward(batch["joint_encoding"].input_ids, batch["joint_encoding"].attention_mask, batch["joint_encoding"].token_type_ids)
-    #logits = model.forward(batch["joint_encoding"], batch["disjoint_encoding"])
-    #logits = model(batch["joint_encoding"].input_ids, batch["joint_encoding"].attention_mask, batch["joint_encoding"].token_type_ids)
 
-    print(logits.pooler_output.shape) # tengo q añadrile la cabeza al modelo??
-    logits = torch.nn.functional.softmax(logits.pooler_output, dim=1)
+@torch.no_grad()
+def evaluate(model: BaseModel, dataset: OriginalPAN23Dataset, collator_fn: PAN23CollatorFn):
+    f1_scores = []
+    model.eval()
+    for idx in range(len(dataset)):
+        batch = dataset[idx]
+        collated_batch = collator_fn(batch)
+        predictions, labels = predict(model, collated_batch)
+        f1_score = (2 * (predictions * labels).sum() / (predictions.sum() + labels.sum())).item()
+        f1_scores.append(f1_score)
+        if idx % 50 != 0:
+            continue
+        print(f"Average F1 score up to document {idx+1}: {np.mean(f1_scores):.4f}")
+    print(f"Average F1 score: {np.mean(f1_scores):.4f)}")
 
-    return logits, labels
-
-def get_positive_ratio(truths):
-    cnt = 0
-    for label in truths:
-        if label == 1:
-            cnt += 1
-    return cnt / len(truths)
-
-def files_to_dicts(source_path):
-    filenames = os.listdir(source_path)
-
-    lines_by_id = dict()
-    truths_by_id = dict()
-
-    for filename in filenames:
-        is_truth = filename.startswith("truth")
-        problem_id = re.search(r"\d+", filename).group(0)
-        filepath = os.path.join(source_path, filename)
-
-        with open(filepath, "r", encoding="utf-8") as f:
-            if is_truth is True:
-                truths_by_id[problem_id] = json.load(f)["changes"]
-            else:
-                lines_by_id[problem_id] = f.readlines()
-
-    return lines_by_id, truths_by_id
-
-def load_pretrained_classification_model(
-    model_config: dict,
-    checkpoint_path: str,
-    task: str
+def load_model_and_data_module(
+    model_config: dict, checkpoint_path: str, task: str
 ):
     """
     Takes the checkpoint of a pytorch lightning module. It must be a model
-    with a classification head. Then, it evaluates model for each document
-    in desired task.
+    with a classification head. Loads the model and returns it.
     """
     # unpack config
     model_name = model_config["model_name"]
     model_params = model_config["model_params"]
+    classification_head_params = model_config["classification_head_params"]
     train_params = merge_dicts(
         model_config["default_train_params"],
         model_config[f"@{task}_override"],
     )
     data_module_params = train_params["data_module_params"]
 
-    # load pycheckpoint
+    # load checkpoint
     checkpoint = torch.load(checkpoint_path)
 
     # remove lightning module prefix
@@ -102,14 +132,13 @@ def load_pretrained_classification_model(
     model_with_class_head = ModelWithClassificationHead(
         model,
         model.get_out_embedding_dim(),
-        dropout_p=0.25,
-        ff_dim=2048,
+        **classification_head_params,
     )
 
     # load weights from checkpoint
     model_with_class_head.load_state_dict(state_dict)
 
-    return model_with_class_head
+    return model_with_class_head, data_module
 
 
 def build_argparse():
@@ -119,7 +148,7 @@ def build_argparse():
 
     # model_config is a file path to a JSON file
     parser.add_argument(
-        "--config",
+        "--model-config",
         type=str,
         required=True,
         help="File path to the configuration JSON file",
@@ -130,6 +159,14 @@ def build_argparse():
         "--source-data-dir",
         type=str,
         help="Path to the directory where the original data is stored.",
+    )
+
+    # checkpoint_path is a string
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        required=True,
+        help="Path to the model checkpoint",
     )
 
     # task is an integer and can only take values 1, 2, or 3
@@ -143,47 +180,23 @@ def build_argparse():
 
     return parser
 
+
 def main():
     parser = build_argparse()
     args = parser.parse_args()
 
-    task = f"task{args.task}"
-    set_type = "validation"
-    source_data_path = os.path.join(
-                args.source_data_dir,
-                f"pan23-multi-author-analysis-dataset{args.task}/pan23-multi-author-analysis-dataset{args.task}-{set_type}/",
-            )
+    # load config and model
+    with open(args.model_config, "r", encoding="utf-8") as f:
+        model_config = json.load(f)
+    model, data_module = load_model_and_data_module(
+        model_config, args.checkpoint, f"task{args.task}"
+    )
+    collator_fn = data_module.loader_config["collate_fn"]
+
+    # load dataset
+    dataset = build_validation_dataset_for_task(args.task, args.source_data_dir)
     
-    # load model
-    with open(args.config, "r", encoding="utf-8") as f:
-            config = json.load(f)
-    
-    model_params = config["model_params"]["models"]
-    train_params = config["default_train_params"]
-
-    model = AutoModel.from_pretrained(model_params['pretrained_transformer']['transformer_model'])
-    tokenizer = AutoTokenizer.from_pretrained(train_params['data_module_params']['tokenizer'])
-
-    f1_score = torchmetrics.F1Score(task="binary")
-    max_len = train_params['data_module_params']['max_len']
-
-    lines_by_id, truths_by_id = files_to_dicts(source_data_path)
-    collator_fn = PAN23CollatorFn(tokenizer, max_len)
-
-    f1_losses = {}
-    for problem_id, lines in lines_by_id.items():
-        batch = []
-        truths = truths_by_id[problem_id]  
-        for text_1, text_2, label in zip(lines, lines[1:], truths):
-            batch.append({"text1": text_1, "text2": text_2, "label": label})
-
-        batch = collator_fn(batch)
-        logits, labels = predict(model, batch)
-
-        score_f1 = f1_score(logits, labels)
-        f1_losses[problem_id] = score_f1
-        break
-    print(f1_losses)
+    evaluate(model, dataset, collator_fn)
 
 
 if __name__ == "__main__":

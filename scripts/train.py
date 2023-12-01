@@ -5,6 +5,7 @@ import os
 import pytorch_lightning as pl
 
 from copy import deepcopy
+from torch import nn
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 project_src_path = os.path.join(dir_path, "..", "src")
@@ -18,7 +19,18 @@ from utils.freeze_layers import freeze_layers
 from utils.merge_dicts import merge_dicts
 
 
-def finetune(config, initial_model, task_name):
+def finetune(config: dict, initial_model: nn.Module, task_name: str):
+    """
+    Finetunes a model for a specific task.
+
+    Args:
+        config (dict): The configuration dictionary containing various parameters.
+        initial_model (Model): The initial model to be finetuned.
+        task_name (str): The name of the task.
+
+    Returns:
+        Model: The finetuned model.
+    """
     print(f"Starting finetuning for task {task_name}...")
 
     # unpack config
@@ -82,14 +94,19 @@ def finetune(config, initial_model, task_name):
     return model
 
 def run(config):
+    """
+    Run finetuning for each task
+    """
     finetune(deepcopy(config), None, "task1")
     # do not reuse the model from task 1, as it is mostly adapted for topic detection
     model = finetune(deepcopy(config), None, "task2")
     model = finetune(deepcopy(config), model, "task3")
 
 
-###### Main ######
 def parse_config(config_file_name):
+    """
+    Load json config
+    """
     try:
         with open(config_file_name, "r", encoding="utf-8") as file:
             return json.load(file)
@@ -100,6 +117,9 @@ def parse_config(config_file_name):
         print(f"Error: The file '{config_file_name}' is not a valid JSON file.")
         return
 
+# ================================================================================================== #
+# ============================================ MAIN ================================================ #
+# ================================================================================================== #
 
 def main():
     # Create the argparse parser

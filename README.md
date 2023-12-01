@@ -21,7 +21,7 @@ Fine-tuned `roberta-base`.
 ## Uploading a model
 
 ```bash
-micromamba run -n master-nlp python scripts/upload_pretrained_transformer.py \
+python scripts/upload_pretrained_transformer.py \
     --model-config configs/roberta-base-task1.json \
     --checkpoint out/roberta-base/finetuned/task1/lightning_logs/version_13/checkpoints/epoch=14-val_f1_score=0.99.ckpt \
     --task 1 \

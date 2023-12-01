@@ -29,13 +29,14 @@ def extract_pretrained_transformer_model(
     # unpack config
     model_name = model_config["model_name"]
     model_params = model_config["model_params"]
+    classification_head_params = model_config["classification_head_params"]
     train_params = merge_dicts(
         model_config["default_train_params"],
         model_config[f"@{task}_override"],
     )
     data_module_params = train_params["data_module_params"]
 
-    # load pycheckpoint
+    # load checkpoint
     checkpoint = torch.load(checkpoint_path)
 
     # remove lightning module prefix
@@ -59,8 +60,7 @@ def extract_pretrained_transformer_model(
     model_with_class_head = ModelWithClassificationHead(
         model,
         model.get_out_embedding_dim(),
-        dropout_p=0.25,
-        ff_dim=2048,
+        **classification_head_params,
     )
 
     # load weights from checkpoint
