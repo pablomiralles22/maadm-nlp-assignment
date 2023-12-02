@@ -84,21 +84,21 @@ def main():
 
     # Argument for the directory of the original data
     parser.add_argument(
-        "--source-dir",
+        "-s", "--source-dir",
         type=str,
         help="Path to the directory where the original data is stored.",
     )
 
     # Argument for the directory to store the transformed data
     parser.add_argument(
-        "--target-dir",
+        "-t", "--target-dir",
         type=str,
         help="Path to the directory where the transformed data will be stored.",
     )
 
     # Argument for whether to use data augmentation
     parser.add_argument(
-        "--augment",
+        "-a", "--augment",
         action="store_true",
         help="Whether to use data augmentation.",
     )

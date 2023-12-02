@@ -1,0 +1,83 @@
+{
+    "model_name": "ensemble",
+    "model_params": {
+        "models": {
+            "conv1d": {
+                "layer_params": [
+                    [ "conv", { "in_channels": 64, "out_channels": 128, "groups": 1, "kernel_size": 5 } ],
+                    [ "max_pool", { "kernel_size": 2 } ],
+                    [ "relu", {} ],
+                    [ "dropout", { "p": 0.2 } ],
+
+                    [ "conv", { "in_channels": 128, "out_channels": 256, "groups": 1, "kernel_size": 5 } ],
+                    [ "max_pool", { "kernel_size": 2 } ],
+                    [ "relu", {} ],
+                    [ "dropout", { "p": 0.2 } ],
+
+                    [ "conv", { "in_channels": 256, "out_channels": 512, "groups": 1, "kernel_size": 5 } ],
+                    [ "max_pool", { "kernel_size": 2 } ],
+                    [ "relu", {} ],
+                    [ "dropout", { "p": 0.2 } ]
+                ]
+            },
+            "pretrained_transformer": {
+                "transformer_model": "roberta-base",
+                "transformer_reduction": "cls",
+                "hidden_dropout_prob": 0.25
+            }
+        }
+    },
+    "classification_head_params": {
+        "dropout_p": 0.2,
+        "ff_dim": 2048
+    },
+    "default_train_params": {
+        "data_module_params": {
+            "batch_size": 64,
+            "max_len": 512,
+            "tokenizer": "roberta-base"
+        },
+        "optimizer_params": {
+            "lr": 0.00003
+        },
+        "trainer_params": {
+            "precision": "16-mixed",
+            "max_epochs": 20,
+            "enable_checkpointing": true,
+            "accelerator": "cuda",
+            "devices": [1]
+        },
+        "unfrozen_layers": 6
+    },
+    "@task1_override": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed/task1"
+        },
+        "trainer_params": {
+            "default_root_dir": "out/roberta-base-ensemble/finetuned/task1"
+        }
+    },
+    "@task2_override": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed/task2"
+        },
+        "trainer_params": {
+            "default_root_dir": "out/roberta-base-ensemble/finetuned/task2",
+            "val_check_interval": 0.5
+        },
+        "fit_params": {
+            "ckpt_path": "out/roberta-base-ensemble/finetuned/task2/lightning_logs/version_8/checkpoints/epoch=7-val_f1_score=0.75.ckpt"
+        }
+    },
+    "@task3_override": {
+        "data_module_params": {
+            "data_path": "data/pan23/transformed/task3"
+        },
+        "trainer_params": {
+            "default_root_dir": "out/roberta-base-ensemble/finetuned/task3"
+        },
+        "fit_params": {
+            "ckpt_path": "out/roberta-base-ensemble/finetuned/task3/lightning_logs/version_2/checkpoints/epoch=7-val_f1_score=0.68.ckpt"
+        }
+    }
+}
