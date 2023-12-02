@@ -3,47 +3,9 @@
     "model_params": {
         "models": {
             "conv1d": {
-                "input_embedding_dim": 64,
-                "output_embedding_dim": 768,
+                "input_embedding_dim": 128,
+                "output_embedding_dim": 512,
                 "layer_params": [
-                    [
-                        "residual_block",
-                        {
-                            "layer_params": [
-                                [ "conv", { "in_channels": 64, "out_channels": 64, "padding": "same", "kernel_size": 5 } ],
-                                [ "conv", { "in_channels": 64, "out_channels": 64, "padding": "same", "kernel_size": 3 } ],
-                                [ "batch_norm", { "num_features": 64 }],
-                                [ "relu", {} ]
-                            ]
-                        }
-                    ],
-                    [
-                        "residual_block",
-                        {
-                            "layer_params": [
-                                [ "conv", { "in_channels": 64, "out_channels": 64, "padding": "same", "kernel_size": 5 } ],
-                                [ "conv", { "in_channels": 64, "out_channels": 64, "padding": "same", "kernel_size": 3 } ],
-                                [ "batch_norm", { "num_features": 64 }],
-                                [ "relu", {} ]
-                            ]
-                        }
-                    ],
-                    [ "conv", { "in_channels": 64, "out_channels": 128, "kernel_size": 5 } ],
-                    [ "batch_norm", { "num_features": 128 }],
-                    [ "max_pool", { "kernel_size": 2 } ],
-                    [ "dropout", { "p": 0.1 } ],
-
-                    [
-                        "residual_block",
-                        {
-                            "layer_params": [
-                                [ "conv", { "in_channels": 128, "out_channels": 128, "padding": "same", "kernel_size": 5 } ],
-                                [ "conv", { "in_channels": 128, "out_channels": 128, "padding": "same", "kernel_size": 3 } ],
-                                [ "batch_norm", { "num_features": 128 }],
-                                [ "relu", {} ]
-                            ]
-                        }
-                    ],
                     [
                         "residual_block",
                         {
@@ -58,19 +20,8 @@
                     [ "conv", { "in_channels": 128, "out_channels": 256, "kernel_size": 5 } ],
                     [ "batch_norm", { "num_features": 256 }],
                     [ "max_pool", { "kernel_size": 2 } ],
-                    [ "dropout", { "p": 0.1 } ],
-
-                    [
-                        "residual_block",
-                        {
-                            "layer_params": [
-                                [ "conv", { "in_channels": 256, "out_channels": 256, "padding": "same", "kernel_size": 5 } ],
-                                [ "conv", { "in_channels": 256, "out_channels": 256, "padding": "same", "kernel_size": 3 } ],
-                                [ "batch_norm", { "num_features": 256 }],
-                                [ "relu", {} ]
-                            ]
-                        }
-                    ],
+                    [ "dropout", { "p": 0.3 } ],
+                    
                     [
                         "residual_block",
                         {
@@ -85,35 +36,7 @@
                     [ "conv", { "in_channels": 256, "out_channels": 512, "kernel_size": 5 } ],
                     [ "batch_norm", { "num_features": 512 }],
                     [ "max_pool", { "kernel_size": 2 } ],
-                    [ "dropout", { "p": 0.1 } ],
-
-                    [
-                        "residual_block",
-                        {
-                            "layer_params": [
-                                [ "conv", { "in_channels": 512, "out_channels": 512, "padding": "same", "kernel_size": 5 } ],
-                                [ "conv", { "in_channels": 512, "out_channels": 512, "padding": "same", "kernel_size": 3 } ],
-                                [ "batch_norm", { "num_features": 512 }],
-                                [ "relu", {} ]
-                            ]
-                        }
-                    ],
-                    [
-                        "residual_block",
-                        {
-                            "layer_params": [
-                                [ "conv", { "in_channels": 512, "out_channels": 512, "padding": "same", "kernel_size": 5 } ],
-                                [ "conv", { "in_channels": 512, "out_channels": 512, "padding": "same", "kernel_size": 3 } ],
-                                [ "batch_norm", { "num_features": 512 }],
-                                [ "relu", {} ]
-                            ]
-                        }
-                    ],
-                    [ "conv", { "in_channels": 512, "out_channels": 768, "kernel_size": 5 } ],
-                    [ "batch_norm", { "num_features": 768 }],
-                    [ "max_pool", { "kernel_size": 2 } ],
-                    [ "dropout", { "p": 0.1 } ]
-
+                    [ "dropout", { "p": 0.2 } ]
                 ]
             },
             "pretrained_transformer": {
@@ -125,25 +48,24 @@
         }
     },
     "classification_head_params": {
-        "dropout_p": 0.1,
-        "ff_dim": 2048,
-        "num_hidden_layers": 4
+        "dropout_p": 0.2,
+        "ff_dim": 2048
     },
     "default_train_params": {
         "data_module_params": {
-            "batch_size": 256,
+            "batch_size": 32,
             "max_len": 512,
             "tokenizer": "roberta-base"
         },
         "optimizer_params": {
-            "lr": 0.000001
+            "lr": 0.00001
         },
         "trainer_params": {
             "precision": "16-mixed",
             "max_epochs": 10,
             "enable_checkpointing": true,
             "accelerator": "cuda",
-            "devices": [2]
+            "devices": 1
         },
         "unfrozen_layers": 0
     },

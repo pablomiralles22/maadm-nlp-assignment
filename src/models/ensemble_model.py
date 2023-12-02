@@ -36,16 +36,21 @@ class EnsembleModel(BaseModel):
         x = [model.forward(joint_encoding, disjoint_encoding) for model in self.models]
         return torch.cat(x, dim=-1)
 
-    def _get_out_embedding_dim(self):
+    def get_out_embedding_dim(self):
         """
-        Get the output embedding dimension of the ensemble model.
-
-        This is a private method.
+        Get the output embedding dimension of the ensemble model. Notice that we had to
+        override the `get_out_embedding_dim` method of the base class.
 
         Returns:
             int: The output embedding dimension.
         """
         return self.out_embedding_dim
+
+    def _get_out_embedding_dim(self):
+        """
+        Ignore in this class, will not be used.
+        """
+        pass
     
     def _forward(self, input_ids, attention_mask, token_type_ids=None):
         """

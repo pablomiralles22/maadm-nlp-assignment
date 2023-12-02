@@ -2,14 +2,15 @@
 
 ## Usage
 
-First, if you want to use one of our private pretrained models, you will need to fill in your
-Huggingface read and write keys in `example.env` and move it to `.env`.
+First, if you want to use one of our private pretrained models, you will need to fill in your Huggingface read and write keys in `example.env` and move it to `.env`.
 
 Second, you will need to download the PAN23 dataset ([link](https://zenodo.org/records/7729178/files/pan23-multi-author-analysis.zip?download=1)) and unzip it in your workspace. Then, you will need to use our script to transform the data, and use the `-a` flag for augmentation:
 
 ```bash
 micromamba run -n master-nlp python scripts/pan-data-transform.py -s data/release -t data/pan23/transformed -a
 ```
+
+Finally, you can build a python environment with `conda` via the `conda-env.yml` file.
 
 ### Training
 To train, run the `train.py` script with some config file, similar to `configs/base-config.json`.
@@ -20,7 +21,7 @@ python scripts/train.py --config configs/roberta-base.json
 ### Evaluating a model
 The evaluation in the rest of the papers is done as the average of the F1-scores for each document. However, for training we transformed each pair of paragraphs as an individual example. Thus, we prepared another script to evaluate a model in a fair way.
 
-```
+```bash
 python scripts/evaluate.py \
     --model-config configs/roberta-base.json \
     --checkpoint out/roberta-base/finetuned/task1/lightning_logs/version_16/checkpoints/epoch=9-val_f1_score=0.99.ckpt \
@@ -45,7 +46,7 @@ python scripts/upload_pretrained_transformer.py \
 ### Dataset
 We use the PAN23 multi-author analysis dataset. The dataset is transformed to a binary classification task using the script `pan-data-transform`:
 ```bash
-python scripts/pan-data-transform.py --source-dir data/pan23/original --target-dir data
+python scripts/pan-data-transform.py --source-dir data/pan23/original --target-dir data/pan23/transformed
 ```
 #### Data augmentation
 Further, you can add the `--augment` flag to the previous command, and the training sets will be augmented in the following way.
@@ -66,10 +67,10 @@ Let $p_1, \dots, p_n$ be the paragraphs of a document, with labels $l_1, \dots, 
 ### Evaluation results
 
 - `roberta-base`.
-    - **Task 1**: 0.9864 F1
-    - **Task 2**: 0.7592 F1
-    - **Task 3**
-- `ensemble` with `conv1d`.
+    - **Task 1**: 0.9807 F1
+    - **Task 2**: 0.7657 F1
+    - **Task 3**: 0.6668 F1
+- `ensemble` with `conv`.
     - **Task 1**
     - **Task 2**
     - **Task 3**

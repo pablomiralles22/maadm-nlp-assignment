@@ -50,7 +50,7 @@ class BaseModel(nn.Module, ABC):
             disjoint_encoding.input_ids,
             disjoint_encoding.attention_mask,
             disjoint_encoding.token_type_ids,
-        )  # (BATCH, EMB_DIM)
+        )  # (BATCH*2, EMB_DIM)
         batch_dim_x_2, _ = x.shape
         return x.reshape(batch_dim_x_2 // 2, -1)
 
