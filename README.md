@@ -84,7 +84,7 @@ conda run -n master-nlp python scripts/train.py \
     - **Task 3**: 0.677 F1
 
 ## Reproducing the results
-If someone want to reproduce the reults, we have uploaded the `out` directory with the training logs and the best checkpoints ([download link]()). It should be downloaded and placed in the root directory of the project. Now, we will go over each step of our procedure.
+If someone wants to reproduce the reults, we have uploaded the `out` directory with the training logs and the best checkpoints ([download link](https://upm365-my.sharepoint.com/:u:/g/personal/pablo_miralles_upm_es/Ef_zO0uBExVJmu6-R9Q9sFIB5l2_V6NUpbIk27TfBNQrow?e=opGHS9)). It should be downloaded and placed in the root directory of the project. Now, we will go over each step of our procedure.
 
 ### 1. Train the transformer model
 We ran the following command, producing the `out/roberta-base` directory.
