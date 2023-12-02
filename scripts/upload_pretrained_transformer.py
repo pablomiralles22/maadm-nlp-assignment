@@ -4,6 +4,8 @@ import torch
 import json
 import argparse
 
+from dotenv import dotenv_values
+
 dir_path = os.path.dirname(os.path.abspath(__file__))
 project_src_path = os.path.join(dir_path, "..", "src")
 sys.path.append(project_src_path)
@@ -106,7 +108,7 @@ def build_argparse():
 
     # hf_token is a string
     parser.add_argument(
-        "--hf-token", type=str, required=True, help="Hugging Face API token"
+        "--hf-env-file", type=str, required=True, help="Env file with Hugging Face API token"
     )
 
     # hf_repository is a string
@@ -125,11 +127,14 @@ def main():
 
     task = f"task{args.task}"
 
+    env_config = dotenv_values(args.hf_env_file)
+    hf_token = env_config["HUGGINGFACE_WRITE_TOKEN"]
+
     extract_pretrained_transformer_model(
         model_config=model_config, 
         checkpoint_path=args.checkpoint,
         task=task,
-        hf_token=args.hf_token,
+        hf_token=hf_token,
         hf_repository=args.hf_repository,
     )
 
