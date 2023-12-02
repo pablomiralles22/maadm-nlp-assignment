@@ -24,7 +24,7 @@
             "max_epochs": 10,
             "enable_checkpointing": true,
             "accelerator": "cuda",
-            "devices": [1]
+            "devices": 1
         },
         "unfrozen_layers": 6
     },

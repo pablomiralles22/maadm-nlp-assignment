@@ -62,7 +62,8 @@ class ClassificationModule(pl.LightningModule):
             dict: A dictionary containing the loss, logits, and labels.
         """
         loss, logits, labels = self._step(batch, batch_idx)
-        f1_score = self.f1_score(logits, labels)
+        probs = torch.sigmoid(logits)
+        f1_score = self.f1_score(probs, labels)
         self.log_dict(
             {
                 "train_loss": loss,
@@ -134,15 +135,14 @@ class ClassificationModule(pl.LightningModule):
             params=self.model.parameters(), **self.optimizer_config
         )
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.75
+            optimizer, mode="min", factor=0.75, patience=3
         )
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
                 "scheduler": scheduler,
                 "monitor": "train_loss",
-                "interval": "step",
-                "frequency": 500,
+                "interval": "epoch",
             },
         }
 

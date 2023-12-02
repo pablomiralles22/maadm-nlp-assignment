@@ -5,6 +5,12 @@
 First, if you want to use one of our private pretrained models, you will need to fill in your
 Huggingface read and write keys in `example.env` and move it to `.env`.
 
+Second, you will need to download the PAN23 dataset ([link](https://zenodo.org/records/7729178/files/pan23-multi-author-analysis.zip?download=1)) and unzip it in your workspace. Then, you will need to use our script to transform the data, and use the `-a` flag for augmentation:
+
+```bash
+micromamba run -n master-nlp python scripts/pan-data-transform.py -s data/release -t data/pan23/transformed -a
+```
+
 ### Training
 To train, run the `train.py` script with some config file, similar to `configs/base-config.json`.
 ```
